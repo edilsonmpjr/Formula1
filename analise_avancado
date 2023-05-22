@@ -10,10 +10,10 @@ project_id = 'helical-ranger-327400'
 client = bigquery.Client(project=project_id)
 
 # Definir as referências das tabelas
-circuits_table = '`helical-ranger-327400.Formula1.circuits`'
-races_table = '`helical-ranger-327400.Formula1.races`'
-drivers_table = '`helical-ranger-327400.Formula1.drivers`'
-results_table = '`helical-ranger-327400.Formula1.results`'
+circuits_table = 'helical-ranger-327400.Formula1.circuits'
+races_table = 'helical-ranger-327400.Formula1.races'
+drivers_table = 'helical-ranger-327400.Formula1.drivers'
+results_table = 'helical-ranger-327400.Formula1.results'
 
 # Consultar os dados das tabelas
 circuito_df = client.query(f'SELECT * FROM {circuits_table}').to_dataframe()
