@@ -1,0 +1,56 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from google.cloud import bigquery
+
+# Definir o ID do projeto
+project_id = 'helical-ranger-327400'
+
+# Criar uma instância do cliente BigQuery
+client = bigquery.Client(project=project_id)
+
+# Definir as referências das tabelas
+circuits_table = '`helical-ranger-327400.Formula1.circuits`'
+races_table = '`helical-ranger-327400.Formula1.races`'
+drivers_table = '`helical-ranger-327400.Formula1.drivers`'
+results_table = '`helical-ranger-327400.Formula1.results`'
+
+# Consultar os dados das tabelas
+circuito_df = client.query(f'SELECT * FROM {circuits_table}').to_dataframe()
+corrida_df = client.query(f'SELECT * FROM {races_table}').to_dataframe()
+piloto_df = client.query(f'SELECT * FROM {drivers_table}').to_dataframe()
+resultado_df = client.query(f'SELECT * FROM {results_table}').to_dataframe()
+
+# Combinar os dataframes para obter as informações relevantes
+df = resultado_df.merge(corrida_df, on='raceId')
+df = df.merge(piloto_df, on='driverId')
+df = df.merge(circuito_df, on='circuitId')
+
+# Calcular estatísticas descritivas dos pontos por piloto em cada corrida
+stats = df.groupby(['forename', 'surname', 'name'])['points'].describe()
+
+# Calcular a correlação entre as variáveis 'position' e 'points'
+correlation = df[['position', 'points']].corr()
+
+# Realizar uma análise de tendência dos pontos ao longo dos anos
+trend = df.groupby('year')['points'].mean()
+
+# Imprimir as estatísticas descritivas e a correlação
+print("Estatísticas Descritivas dos Pontos por Piloto em Cada Corrida:")
+print(stats)
+print("\nCorrelação entre Posição de Chegada e Pontos:")
+print(correlation)
+
+# Visualizar um gráfico de barras com os pontos por piloto em cada corrida
+df.groupby(['forename', 'surname', 'name'])['points'].sum().unstack().plot(kind='bar')
+plt.xlabel('Piloto')
+plt.ylabel('Total de Pontos')
+plt.title('Pontuação por Piloto em Cada Corrida')
+plt.show()
+
+# Visualizar um gráfico de linha com a tendência dos pontos ao longo dos anos
+plt.plot(trend.index, trend.values, marker='o')
+plt.xlabel('Ano')
+plt.ylabel('Pontuação Média')
+plt.title('Tendência da Pontuação ao Longo dos Anos')
+plt.show()
